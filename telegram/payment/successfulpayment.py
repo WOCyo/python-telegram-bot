@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # A library that provides a Python interface to the Telegram Bot API
-# Copyright (C) 2015-2020
+# Copyright (C) 2015-2021
 # Leandro Toledo de Souza <devs@python-telegram-bot.org>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -18,9 +18,11 @@
 # along with this program.  If not, see [http://www.gnu.org/licenses/].
 """This module contains an object that represents a Telegram SuccessfulPayment."""
 
-from telegram import TelegramObject, OrderInfo
+from typing import TYPE_CHECKING, Any, Optional
+
+from telegram import OrderInfo, TelegramObject
 from telegram.utils.types import JSONDict
-from typing import Any, Optional, TYPE_CHECKING
+
 if TYPE_CHECKING:
     from telegram import Bot
 
@@ -31,16 +33,6 @@ class SuccessfulPayment(TelegramObject):
     Objects of this class are comparable in terms of equality. Two objects of this class are
     considered equal, if their :attr:`telegram_payment_charge_id` and
     :attr:`provider_payment_charge_id` are equal.
-
-    Attributes:
-        currency (:obj:`str`): Three-letter ISO 4217 currency code.
-        total_amount (:obj:`int`): Total price in the smallest units of the currency.
-        invoice_payload (:obj:`str`): Bot specified invoice payload.
-        shipping_option_id (:obj:`str`): Optional. Identifier of the shipping option chosen by the
-            user.
-        order_info (:class:`telegram.OrderInfo`): Optional. Order info provided by the user.
-        telegram_payment_charge_id (:obj:`str`): Telegram payment identifier.
-        provider_payment_charge_id (:obj:`str`): Provider payment identifier.
 
     Args:
         currency (:obj:`str`): Three-letter ISO 4217 currency code.
@@ -58,17 +50,40 @@ class SuccessfulPayment(TelegramObject):
         provider_payment_charge_id (:obj:`str`): Provider payment identifier.
         **kwargs (:obj:`dict`): Arbitrary keyword arguments.
 
+    Attributes:
+        currency (:obj:`str`): Three-letter ISO 4217 currency code.
+        total_amount (:obj:`int`): Total price in the smallest units of the currency.
+        invoice_payload (:obj:`str`): Bot specified invoice payload.
+        shipping_option_id (:obj:`str`): Optional. Identifier of the shipping option chosen by the
+            user.
+        order_info (:class:`telegram.OrderInfo`): Optional. Order info provided by the user.
+        telegram_payment_charge_id (:obj:`str`): Telegram payment identifier.
+        provider_payment_charge_id (:obj:`str`): Provider payment identifier.
+
     """
 
-    def __init__(self,
-                 currency: str,
-                 total_amount: int,
-                 invoice_payload: str,
-                 telegram_payment_charge_id: str,
-                 provider_payment_charge_id: str,
-                 shipping_option_id: str = None,
-                 order_info: OrderInfo = None,
-                 **kwargs: Any):
+    __slots__ = (
+        'invoice_payload',
+        'shipping_option_id',
+        'currency',
+        'order_info',
+        'telegram_payment_charge_id',
+        'provider_payment_charge_id',
+        'total_amount',
+        '_id_attrs',
+    )
+
+    def __init__(
+        self,
+        currency: str,
+        total_amount: int,
+        invoice_payload: str,
+        telegram_payment_charge_id: str,
+        provider_payment_charge_id: str,
+        shipping_option_id: str = None,
+        order_info: OrderInfo = None,
+        **_kwargs: Any,
+    ):
         self.currency = currency
         self.total_amount = total_amount
         self.invoice_payload = invoice_payload
@@ -81,7 +96,8 @@ class SuccessfulPayment(TelegramObject):
 
     @classmethod
     def de_json(cls, data: Optional[JSONDict], bot: 'Bot') -> Optional['SuccessfulPayment']:
-        data = cls.parse_data(data)
+        """See :meth:`telegram.TelegramObject.de_json`."""
+        data = cls._parse_data(data)
 
         if not data:
             return None

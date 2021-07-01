@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # A library that provides a Python interface to the Telegram Bot API
-# Copyright (C) 2015-2020
+# Copyright (C) 2015-2021
 # Leandro Toledo de Souza <devs@python-telegram-bot.org>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -16,8 +16,11 @@
 #
 # You should have received a copy of the GNU Lesser Public License
 # along with this program.  If not, see [http://www.gnu.org/licenses/].
+# pylint: disable=C0114
+from typing import TYPE_CHECKING, Any
+
 from telegram import TelegramObject
-from typing import Any, TYPE_CHECKING
+
 if TYPE_CHECKING:
     from telegram import Bot
 
@@ -43,19 +46,35 @@ class PersonalDetails(TelegramObject):
             residence.
     """
 
-    def __init__(self,
-                 first_name: str,
-                 last_name: str,
-                 birth_date: str,
-                 gender: str,
-                 country_code: str,
-                 residence_country_code: str,
-                 first_name_native: str = None,
-                 last_name_native: str = None,
-                 middle_name: str = None,
-                 middle_name_native: str = None,
-                 bot: 'Bot' = None,
-                 **kwargs: Any):
+    __slots__ = (
+        'middle_name',
+        'first_name_native',
+        'last_name_native',
+        'residence_country_code',
+        'first_name',
+        'last_name',
+        'country_code',
+        'gender',
+        'bot',
+        'middle_name_native',
+        'birth_date',
+    )
+
+    def __init__(
+        self,
+        first_name: str,
+        last_name: str,
+        birth_date: str,
+        gender: str,
+        country_code: str,
+        residence_country_code: str,
+        first_name_native: str = None,
+        last_name_native: str = None,
+        middle_name: str = None,
+        middle_name_native: str = None,
+        bot: 'Bot' = None,
+        **_kwargs: Any,
+    ):
         # Required
         self.first_name = first_name
         self.last_name = last_name
@@ -84,15 +103,27 @@ class ResidentialAddress(TelegramObject):
         post_code (:obj:`str`): Address post code.
     """
 
-    def __init__(self,
-                 street_line1: str,
-                 street_line2: str,
-                 city: str,
-                 state: str,
-                 country_code: str,
-                 post_code: str,
-                 bot: 'Bot' = None,
-                 **kwargs: Any):
+    __slots__ = (
+        'post_code',
+        'city',
+        'country_code',
+        'street_line2',
+        'street_line1',
+        'bot',
+        'state',
+    )
+
+    def __init__(
+        self,
+        street_line1: str,
+        street_line2: str,
+        city: str,
+        state: str,
+        country_code: str,
+        post_code: str,
+        bot: 'Bot' = None,
+        **_kwargs: Any,
+    ):
         # Required
         self.street_line1 = street_line1
         self.street_line2 = street_line2
@@ -113,7 +144,9 @@ class IdDocumentData(TelegramObject):
         expiry_date (:obj:`str`): Optional. Date of expiry, in DD.MM.YYYY format.
     """
 
-    def __init__(self, document_no: str, expiry_date: str, bot: 'Bot' = None, **kwargs: Any):
+    __slots__ = ('document_no', 'bot', 'expiry_date')
+
+    def __init__(self, document_no: str, expiry_date: str, bot: 'Bot' = None, **_kwargs: Any):
         self.document_no = document_no
         self.expiry_date = expiry_date
 

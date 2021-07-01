@@ -2,7 +2,7 @@
 # pylint: disable=R0903
 #
 # A library that provides a Python interface to the Telegram Bot API
-# Copyright (C) 2020
+# Copyright (C) 2020-2021
 # Leandro Toledo de Souza <devs@python-telegram-bot.org>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -18,8 +18,9 @@
 # You should have received a copy of the GNU Lesser Public License
 # along with this program.  If not, see [http://www.gnu.org/licenses/].
 """This module contains an object that represents a type of a Telegram Poll."""
-from telegram import TelegramObject
 from typing import Any
+
+from telegram import TelegramObject
 
 
 class KeyboardButtonPollType(TelegramObject):
@@ -35,7 +36,10 @@ class KeyboardButtonPollType(TelegramObject):
             passed, only regular polls will be allowed. Otherwise, the user will be allowed to
             create a poll of any type.
     """
-    def __init__(self, type: str = None, **kwargs: Any):
+
+    __slots__ = ('type', '_id_attrs')
+
+    def __init__(self, type: str = None, **_kwargs: Any):  # pylint: disable=W0622
         self.type = type
 
         self._id_attrs = (self.type,)

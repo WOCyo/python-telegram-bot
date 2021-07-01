@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # A library that provides a Python interface to the Telegram Bot API
-# Copyright (C) 2015-2020
+# Copyright (C) 2015-2021
 # Leandro Toledo de Souza <devs@python-telegram-bot.org>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -18,9 +18,12 @@
 # along with this program.  If not, see [http://www.gnu.org/licenses/].
 """This module contains objects that represents stickers."""
 
-from telegram import PhotoSize, TelegramObject
-from telegram.utils.types import JSONDict
-from typing import Any, Optional, List, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, List, Optional, ClassVar
+
+from telegram import PhotoSize, TelegramObject, constants
+from telegram.utils.helpers import DEFAULT_NONE
+from telegram.utils.types import JSONDict, ODVInput
+
 if TYPE_CHECKING:
     from telegram import Bot, File
 
@@ -30,23 +33,6 @@ class Sticker(TelegramObject):
 
     Objects of this class are comparable in terms of equality. Two objects of this class are
     considered equal, if their :attr:`file_unique_id` is equal.
-
-    Attributes:
-        file_id (:obj:`str`): Identifier for this file.
-        file_unique_id (:obj:`str`): Unique identifier for this file, which
-            is supposed to be the same over time and for different bots.
-            Can't be used to download or reuse the file.
-        width (:obj:`int`): Sticker width.
-        height (:obj:`int`): Sticker height.
-        is_animated (:obj:`bool`): :obj:`True`, if the sticker is animated.
-        thumb (:class:`telegram.PhotoSize`): Optional. Sticker thumbnail in the .webp or .jpg
-            format.
-        emoji (:obj:`str`): Optional. Emoji associated with the sticker.
-        set_name (:obj:`str`): Optional. Name of the sticker set to which the sticker belongs.
-        mask_position (:class:`telegram.MaskPosition`): Optional. For mask stickers, the position
-            where the mask should be placed.
-        file_size (:obj:`int`): Optional. File size.
-        bot (:class:`telegram.Bot`): Optional. The Bot to use for instance methods.
 
     Args:
         file_id (:obj:`str`): Identifier for this file, which can be used to download
@@ -68,22 +54,55 @@ class Sticker(TelegramObject):
         bot (:class:`telegram.Bot`, optional): The Bot to use for instance methods.
         **kwargs (obj:`dict`): Arbitrary keyword arguments.
 
+    Attributes:
+        file_id (:obj:`str`): Identifier for this file.
+        file_unique_id (:obj:`str`): Unique identifier for this file, which
+            is supposed to be the same over time and for different bots.
+            Can't be used to download or reuse the file.
+        width (:obj:`int`): Sticker width.
+        height (:obj:`int`): Sticker height.
+        is_animated (:obj:`bool`): :obj:`True`, if the sticker is animated.
+        thumb (:class:`telegram.PhotoSize`): Optional. Sticker thumbnail in the .webp or .jpg
+            format.
+        emoji (:obj:`str`): Optional. Emoji associated with the sticker.
+        set_name (:obj:`str`): Optional. Name of the sticker set to which the sticker belongs.
+        mask_position (:class:`telegram.MaskPosition`): Optional. For mask stickers, the position
+            where the mask should be placed.
+        file_size (:obj:`int`): Optional. File size.
+        bot (:class:`telegram.Bot`): Optional. The Bot to use for instance methods.
 
     """
 
-    def __init__(self,
-                 file_id: str,
-                 file_unique_id: str,
-                 width: int,
-                 height: int,
-                 is_animated: bool,
-                 thumb: PhotoSize = None,
-                 emoji: str = None,
-                 file_size: int = None,
-                 set_name: str = None,
-                 mask_position: 'MaskPosition' = None,
-                 bot: 'Bot' = None,
-                 **kwargs: Any):
+    __slots__ = (
+        'bot',
+        'width',
+        'file_id',
+        'is_animated',
+        'file_size',
+        'thumb',
+        'set_name',
+        'mask_position',
+        'height',
+        'file_unique_id',
+        'emoji',
+        '_id_attrs',
+    )
+
+    def __init__(
+        self,
+        file_id: str,
+        file_unique_id: str,
+        width: int,
+        height: int,
+        is_animated: bool,
+        thumb: PhotoSize = None,
+        emoji: str = None,
+        file_size: int = None,
+        set_name: str = None,
+        mask_position: 'MaskPosition' = None,
+        bot: 'Bot' = None,
+        **_kwargs: Any,
+    ):
         # Required
         self.file_id = str(file_id)
         self.file_unique_id = str(file_unique_id)
@@ -102,7 +121,8 @@ class Sticker(TelegramObject):
 
     @classmethod
     def de_json(cls, data: Optional[JSONDict], bot: 'Bot') -> Optional['Sticker']:
-        data = cls.parse_data(data)
+        """See :meth:`telegram.TelegramObject.de_json`."""
+        data = cls._parse_data(data)
 
         if not data:
             return None
@@ -112,24 +132,21 @@ class Sticker(TelegramObject):
 
         return cls(bot=bot, **data)
 
-    def get_file(self, timeout: str = None, api_kwargs: JSONDict = None) -> 'File':
+    def get_file(
+        self, timeout: ODVInput[float] = DEFAULT_NONE, api_kwargs: JSONDict = None
+    ) -> 'File':
         """Convenience wrapper over :attr:`telegram.Bot.get_file`
 
-        Args:
-            timeout (:obj:`int` | :obj:`float`, optional): If this value is specified, use it as
-                the read timeout from the server (instead of the one specified during creation of
-                the connection pool).
-            api_kwargs (:obj:`dict`, optional): Arbitrary keyword arguments to be passed to the
-                Telegram API.
+        For the documentation of the arguments, please see :meth:`telegram.Bot.get_file`.
 
         Returns:
             :class:`telegram.File`
 
         Raises:
-            :class:`telegram.TelegramError`
+            :class:`telegram.error.TelegramError`
 
         """
-        return self.bot.get_file(self.file_id, timeout=timeout, api_kwargs=api_kwargs)
+        return self.bot.get_file(file_id=self.file_id, timeout=timeout, api_kwargs=api_kwargs)
 
 
 class StickerSet(TelegramObject):
@@ -158,15 +175,26 @@ class StickerSet(TelegramObject):
 
     """
 
-    def __init__(self,
-                 name: str,
-                 title: str,
-                 is_animated: bool,
-                 contains_masks: bool,
-                 stickers: List[Sticker],
-                 bot: 'Bot' = None,
-                 thumb: PhotoSize = None,
-                 **kwargs: Any):
+    __slots__ = (
+        'is_animated',
+        'contains_masks',
+        'thumb',
+        'title',
+        'stickers',
+        'name',
+        '_id_attrs',
+    )
+
+    def __init__(
+        self,
+        name: str,
+        title: str,
+        is_animated: bool,
+        contains_masks: bool,
+        stickers: List[Sticker],
+        thumb: PhotoSize = None,
+        **_kwargs: Any,
+    ):
         self.name = name
         self.title = title
         self.is_animated = is_animated
@@ -179,6 +207,7 @@ class StickerSet(TelegramObject):
 
     @classmethod
     def de_json(cls, data: Optional[JSONDict], bot: 'Bot') -> Optional['StickerSet']:
+        """See :meth:`telegram.TelegramObject.de_json`."""
         if not data:
             return None
 
@@ -188,6 +217,7 @@ class StickerSet(TelegramObject):
         return cls(bot=bot, **data)
 
     def to_dict(self) -> JSONDict:
+        """See :meth:`telegram.TelegramObject.to_dict`."""
         data = super().to_dict()
 
         data['stickers'] = [s.to_dict() for s in data.get('stickers')]
@@ -227,16 +257,19 @@ class MaskPosition(TelegramObject):
         scale (:obj:`float`): Mask scaling coefficient. For example, 2.0 means double size.
 
     """
-    FOREHEAD: str = 'forehead'
-    """:obj:`str`: 'forehead'"""
-    EYES: str = 'eyes'
-    """:obj:`str`: 'eyes'"""
-    MOUTH: str = 'mouth'
-    """:obj:`str`: 'mouth'"""
-    CHIN: str = 'chin'
-    """:obj:`str`: 'chin'"""
 
-    def __init__(self, point: str, x_shift: float, y_shift: float, scale: float, **kwargs: Any):
+    __slots__ = ('point', 'scale', 'x_shift', 'y_shift', '_id_attrs')
+
+    FOREHEAD: ClassVar[str] = constants.STICKER_FOREHEAD
+    """:const:`telegram.constants.STICKER_FOREHEAD`"""
+    EYES: ClassVar[str] = constants.STICKER_EYES
+    """:const:`telegram.constants.STICKER_EYES`"""
+    MOUTH: ClassVar[str] = constants.STICKER_MOUTH
+    """:const:`telegram.constants.STICKER_MOUTH`"""
+    CHIN: ClassVar[str] = constants.STICKER_CHIN
+    """:const:`telegram.constants.STICKER_CHIN`"""
+
+    def __init__(self, point: str, x_shift: float, y_shift: float, scale: float, **_kwargs: Any):
         self.point = point
         self.x_shift = x_shift
         self.y_shift = y_shift
@@ -246,7 +279,8 @@ class MaskPosition(TelegramObject):
 
     @classmethod
     def de_json(cls, data: Optional[JSONDict], bot: 'Bot') -> Optional['MaskPosition']:
-        data = cls.parse_data(data)
+        """See :meth:`telegram.TelegramObject.de_json`."""
+        data = cls._parse_data(data)
 
         if data is None:
             return None

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # A library that provides a Python interface to the Telegram Bot API
-# Copyright (C) 2015-2020
+# Copyright (C) 2015-2021
 # Leandro Toledo de Souza <devs@python-telegram-bot.org>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -18,8 +18,9 @@
 # along with this program.  If not, see [http://www.gnu.org/licenses/].
 """This module contains an object that represents a Telegram LabeledPrice."""
 
-from telegram import TelegramObject
 from typing import Any
+
+from telegram import TelegramObject
 
 
 class LabeledPrice(TelegramObject):
@@ -27,10 +28,6 @@ class LabeledPrice(TelegramObject):
 
     Objects of this class are comparable in terms of equality. Two objects of this class are
     considered equal, if their :attr:`label` and :attr:`amount` are equal.
-
-    Attributes:
-        label (:obj:`str`): Portion label.
-        amount (:obj:`int`): Price of the product in the smallest units of the currency.
 
     Args:
         label (:obj:`str`): Portion label.
@@ -42,9 +39,15 @@ class LabeledPrice(TelegramObject):
             (2 for the majority of currencies).
         **kwargs (:obj:`dict`): Arbitrary keyword arguments.
 
+    Attributes:
+        label (:obj:`str`): Portion label.
+        amount (:obj:`int`): Price of the product in the smallest units of the currency.
+
     """
 
-    def __init__(self, label: str, amount: int, **kwargs: Any):
+    __slots__ = ('label', '_id_attrs', 'amount')
+
+    def __init__(self, label: str, amount: int, **_kwargs: Any):
         self.label = label
         self.amount = amount
 

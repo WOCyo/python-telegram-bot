@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # A library that provides a Python interface to the Telegram Bot API
-# Copyright (C) 2015-2020
+# Copyright (C) 2015-2021
 # Leandro Toledo de Souza <devs@python-telegram-bot.org>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -16,7 +15,6 @@
 #
 # You should have received a copy of the GNU Lesser Public License
 # along with this program.  If not, see [http://www.gnu.org/licenses/].
-
 import pytest
 
 from datetime import datetime
@@ -28,19 +26,23 @@ from telegram.utils.helpers import to_timestamp
 
 @pytest.fixture(scope="class")
 def poll_option():
-    return PollOption(text=TestPollOption.text,
-                      voter_count=TestPollOption.voter_count)
+    return PollOption(text=TestPollOption.text, voter_count=TestPollOption.voter_count)
 
 
 class TestPollOption:
     text = "test option"
     voter_count = 3
 
+    def test_slot_behaviour(self, poll_option, mro_slots, recwarn):
+        for attr in poll_option.__slots__:
+            assert getattr(poll_option, attr, 'err') != 'err', f"got extra slot '{attr}'"
+        assert not poll_option.__dict__, f"got missing slot(s): {poll_option.__dict__}"
+        assert len(mro_slots(poll_option)) == len(set(mro_slots(poll_option))), "duplicate slot"
+        poll_option.custom, poll_option.text = 'should give warning', self.text
+        assert len(recwarn) == 1 and 'custom' in str(recwarn[0].message), recwarn.list
+
     def test_de_json(self):
-        json_dict = {
-            'text': self.text,
-            'voter_count': self.voter_count
-        }
+        json_dict = {'text': self.text, 'voter_count': self.voter_count}
         poll_option = PollOption.de_json(json_dict, None)
 
         assert poll_option.text == self.text
@@ -75,8 +77,9 @@ class TestPollOption:
 
 @pytest.fixture(scope="class")
 def poll_answer():
-    return PollAnswer(poll_id=TestPollAnswer.poll_id, user=TestPollAnswer.user,
-                      option_ids=TestPollAnswer.poll_id)
+    return PollAnswer(
+        poll_id=TestPollAnswer.poll_id, user=TestPollAnswer.user, option_ids=TestPollAnswer.poll_id
+    )
 
 
 class TestPollAnswer:
@@ -88,7 +91,7 @@ class TestPollAnswer:
         json_dict = {
             'poll_id': self.poll_id,
             'user': self.user.to_dict(),
-            'option_ids': self.option_ids
+            'option_ids': self.option_ids,
         }
         poll_answer = PollAnswer.de_json(json_dict, None)
 
@@ -126,19 +129,20 @@ class TestPollAnswer:
 
 @pytest.fixture(scope='class')
 def poll():
-    return Poll(TestPoll.id_,
-                TestPoll.question,
-                TestPoll.options,
-                TestPoll.total_voter_count,
-                TestPoll.is_closed,
-                TestPoll.is_anonymous,
-                TestPoll.type,
-                TestPoll.allows_multiple_answers,
-                explanation=TestPoll.explanation,
-                explanation_entities=TestPoll.explanation_entities,
-                open_period=TestPoll.open_period,
-                close_date=TestPoll.close_date,
-                )
+    return Poll(
+        TestPoll.id_,
+        TestPoll.question,
+        TestPoll.options,
+        TestPoll.total_voter_count,
+        TestPoll.is_closed,
+        TestPoll.is_anonymous,
+        TestPoll.type,
+        TestPoll.allows_multiple_answers,
+        explanation=TestPoll.explanation,
+        explanation_entities=TestPoll.explanation_entities,
+        open_period=TestPoll.open_period,
+        close_date=TestPoll.close_date,
+    )
 
 
 class TestPoll:
@@ -150,8 +154,10 @@ class TestPoll:
     is_anonymous = False
     type = Poll.REGULAR
     allows_multiple_answers = True
-    explanation = (b'\\U0001f469\\u200d\\U0001f469\\u200d\\U0001f467'
-                   b'\\u200d\\U0001f467\\U0001f431http://google.com').decode('unicode-escape')
+    explanation = (
+        b'\\U0001f469\\u200d\\U0001f469\\u200d\\U0001f467'
+        b'\\u200d\\U0001f467\\U0001f431http://google.com'
+    ).decode('unicode-escape')
     explanation_entities = [MessageEntity(13, 17, MessageEntity.URL)]
     open_period = 42
     close_date = datetime.utcnow()
@@ -169,7 +175,7 @@ class TestPoll:
             'explanation': self.explanation,
             'explanation_entities': [self.explanation_entities[0].to_dict()],
             'open_period': self.open_period,
-            'close_date': to_timestamp(self.close_date)
+            'close_date': to_timestamp(self.close_date),
         }
         poll = Poll.de_json(json_dict, bot)
 

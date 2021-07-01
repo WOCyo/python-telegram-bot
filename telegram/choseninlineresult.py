@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-# pylint: disable=R0902,R0912,R0913
+# pylint: disable=R0902,R0913
 #
 # A library that provides a Python interface to the Telegram Bot API
-# Copyright (C) 2015-2020
+# Copyright (C) 2015-2021
 # Leandro Toledo de Souza <devs@python-telegram-bot.org>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -19,9 +19,11 @@
 # along with this program.  If not, see [http://www.gnu.org/licenses/].
 """This module contains an object that represents a Telegram ChosenInlineResult."""
 
-from telegram import TelegramObject, User, Location
+from typing import TYPE_CHECKING, Any, Optional
+
+from telegram import Location, TelegramObject, User
 from telegram.utils.types import JSONDict
-from typing import Any, Optional, TYPE_CHECKING
+
 if TYPE_CHECKING:
     from telegram import Bot
 
@@ -35,14 +37,9 @@ class ChosenInlineResult(TelegramObject):
     considered equal, if their :attr:`result_id` is equal.
 
     Note:
-        In Python `from` is a reserved word, use `from_user` instead.
-
-    Attributes:
-        result_id (:obj:`str`): The unique identifier for the result that was chosen.
-        from_user (:class:`telegram.User`): The user that chose the result.
-        location (:class:`telegram.Location`): Optional. Sender location.
-        inline_message_id (:obj:`str`): Optional. Identifier of the sent inline message.
-        query (:obj:`str`): The query that was used to obtain the result.
+        * In Python ``from`` is a reserved word, use ``from_user`` instead.
+        * It is necessary to enable inline feedback via `@Botfather <https://t.me/BotFather>`_ in
+          order to receive these objects in updates.
 
     Args:
         result_id (:obj:`str`): The unique identifier for the result that was chosen.
@@ -55,19 +52,26 @@ class ChosenInlineResult(TelegramObject):
         query (:obj:`str`): The query that was used to obtain the result.
         **kwargs (:obj:`dict`): Arbitrary keyword arguments.
 
-    Note:
-        It is necessary to enable inline feedback via `@Botfather <https://t.me/BotFather>`_ in
-        order to receive these objects in updates.
+    Attributes:
+        result_id (:obj:`str`): The unique identifier for the result that was chosen.
+        from_user (:class:`telegram.User`): The user that chose the result.
+        location (:class:`telegram.Location`): Optional. Sender location.
+        inline_message_id (:obj:`str`): Optional. Identifier of the sent inline message.
+        query (:obj:`str`): The query that was used to obtain the result.
 
     """
 
-    def __init__(self,
-                 result_id: str,
-                 from_user: User,
-                 query: str,
-                 location: Location = None,
-                 inline_message_id: str = None,
-                 **kwargs: Any):
+    __slots__ = ('location', 'result_id', 'from_user', 'inline_message_id', '_id_attrs', 'query')
+
+    def __init__(
+        self,
+        result_id: str,
+        from_user: User,
+        query: str,
+        location: Location = None,
+        inline_message_id: str = None,
+        **_kwargs: Any,
+    ):
         # Required
         self.result_id = result_id
         self.from_user = from_user
@@ -80,7 +84,8 @@ class ChosenInlineResult(TelegramObject):
 
     @classmethod
     def de_json(cls, data: Optional[JSONDict], bot: 'Bot') -> Optional['ChosenInlineResult']:
-        data = cls.parse_data(data)
+        """See :meth:`telegram.TelegramObject.de_json`."""
+        data = cls._parse_data(data)
 
         if not data:
             return None

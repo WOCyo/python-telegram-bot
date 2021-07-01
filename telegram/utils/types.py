@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # A library that provides a Python interface to the Telegram Bot API
-# Copyright (C) 2015-2020
+# Copyright (C) 2015-2021
 # Leandro Toledo de Souza <devs@python-telegram-bot.org>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,19 +17,41 @@
 # You should have received a copy of the GNU Lesser Public License
 # along with this program.  If not, see [http://www.gnu.org/licenses/].
 """This module contains custom typing aliases."""
-from typing import Union, Any, Dict, TYPE_CHECKING, IO, Tuple, Optional
+from pathlib import Path
+from typing import (
+    IO,
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 if TYPE_CHECKING:
-    from telegram import InputFile, Update
+    from telegram import InputFile  # noqa: F401
+    from telegram.utils.helpers import DefaultValue  # noqa: F401
 
 FileLike = Union[IO, 'InputFile']
-"""Either an open file handler or in :class:`telegram.InputFile`."""
+"""Either an open file handler or a :class:`telegram.InputFile`."""
+
+FileInput = Union[str, bytes, FileLike, Path]
+"""Valid input for passing files to Telegram. Either a file id as string, a file like object,
+a local file path as string, :class:`pathlib.Path` or the file contents as :obj:`bytes`."""
 
 JSONDict = Dict[str, Any]
 """Dictionary containing response from Telegram or data to send to the API."""
 
-HandlerArg = Union[str, 'Update']
-"""The argument that handlers parse for :meth:`telegram.ext.handler.check_update` etc."""
+DVType = TypeVar('DVType')
+ODVInput = Optional[Union['DefaultValue[DVType]', DVType]]
+"""Generic type for bot method parameters which can have defaults. ``ODVInput[type]`` is the same
+as ``Optional[Union[DefaultValue, type]]``."""
+DVInput = Union['DefaultValue[DVType]', DVType]
+"""Generic type for bot method parameters which can have defaults. ``DVInput[type]`` is the same
+as ``Union[DefaultValue, type]``."""
 
-ConversationDict = Dict[Tuple[int, ...], Optional[object]]
-"""Dicts as maintained by the :class:`telegram.ext.ConversationHandler`."""
+RT = TypeVar("RT")
+SLT = Union[RT, List[RT], Tuple[RT, ...]]
+"""Single instance or list/tuple of instances."""
